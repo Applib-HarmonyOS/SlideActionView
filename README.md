@@ -8,7 +8,7 @@ Inspired by [fennifith/SlideActionView](https://github.com/fennifith/SlideAction
 ## Feature
 SlideActionView is a simple widget that provides a nice slide-to-left/right interaction.
 
-<img src="https://github.com/priyankabb153/SlideActionView/blob/master/screenshots/slideactionview.gif" width="256">
+<img src="https://github.com/priyankabb153/SlideActionView/blob/main/screenshots/slideactionview.gif" width="256">
 
 ## Dependency
 1. For using slideactionview module in sample app, include the source code and add the below dependencies in entry/build.gradle to generate hap/support.har.
