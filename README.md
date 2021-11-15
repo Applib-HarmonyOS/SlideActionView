@@ -1,60 +1,59 @@
-SlideActionView is a simple widget that provides a nice slide-to-left/right interaction. This is a part of my efforts to modularize some of the things that I write; it was originally a part of [Alarmio](https://jfenn.me/projects/alarmio), and has been separated into its own library.
+# SlideActionView
 
-[![JitPack](https://jitpack.io/v/me.jfenn/SlideActionView.svg)](https://jitpack.io/#me.jfenn/SlideActionView)
-[![Build Status](https://travis-ci.com/fennifith/SlideActionView.svg?branch=master)](https://travis-ci.com/fennifith/SlideActionView)
-[![Discord](https://img.shields.io/discord/514625116706177035.svg?logo=discord&colorB=7289da)](https://discord.gg/ucBGWDy)
+A HMOS library which provides slide-to-left/right interaction.
 
-For testing and experimentation purposes, a sample apk can be downloaded [here](https://jfenn.me/projects/slideactionview).
+## Source
+Inspired by [fennifith/SlideActionView](https://github.com/fennifith/SlideActionView) - version 0.0.2
 
-|Sample App|Use in Alarmio|
-|------|------|
-|![img](./.github/images/sample.png?raw=true)|![img](./.github/images/alert.gif?raw=true)|
+## Feature
+SlideActionView is a simple widget that provides a nice slide-to-left/right interaction.
+
+<img src="https://github.com/priyankabb153/SlideActionView/blob/master/screenshots/slideactionview.gif" width="256">
+
+## Dependency
+1. For using slideactionview module in sample app, include the source code and add the below dependencies in entry/build.gradle to generate hap/support.har.
+```groovy
+	dependencies {
+		implementation project(':slideactionview')
+                implementation fileTree(dir: 'libs', include: ['*.har'])
+                testImplementation 'junit:junit:4.13'
+	}
+```
+2. For using slideactionview in separate application using har file, add the har file in the entry/libs folder and add the dependencies in entry/build.gradle file.
+```groovy
+	dependencies {
+		implementation fileTree(dir: 'libs', include: ['*.har'])
+		testImplementation 'junit:junit:4.13'
+	}
+```
 
 ## Usage
-
-### Setup
-
-This project is published on [JitPack](https://jitpack.io), which you can add to your project by copying the following to your root build.gradle at the end of "repositories".
-
-```gradle
-allprojects {
-  repositories {
-    ...
-    maven { url 'https://jitpack.io' }
-  }
-}
-```
-
-To add the dependency, copy this line into your app module's build.gradle file.
-
-```gradle
-implementation 'me.jfenn:SlideActionView:0.0.2'
-```
-
-### Basic Use
 
 Adding the SlideActionView somewhere in your layout is fairly simple. Here is an example:
 
 ```xml
 <me.jfenn.slideactionview.SlideActionView
-  android:id="@+id/actionView"
-  android:layout_width="match_parent"
-  android:layout_height="wrap_content"
-  android:layout_gravity="bottom" />
+    ohos:id="$+id:SlideAction"
+    ohos:background_element="#30000000"
+    ohos:height="180vp"
+    ohos:layout_alignment="bottom"
+    ohos:width="match_parent"/>
 ```
 
-You will then want to specify icons for the left/right "slides". This can be done using the `setLeftIcon` and `setRightIcon` methods of the view. They accept both a `Drawable` and `Bitmap`, but it is more efficient to pass a `Bitmap` if possible.
+You will then want to specify icons for the left/right "slides". This can be done using the ``setLeftIcon`` and ``setRightIcon`` methods of the view. They accept both a ``Element`` and ``PixelMap``, but it is more efficient to pass a ``PixelMap`` if possible.
 
 ```java
-SlideActionView actionView = findViewById(R.id.actionView);
-actionView.setLeftIcon(leftIconBitmap);
-actionView.setRightIcon(rightIconBitmap);
+SlideActionView view = (SlideActionView) findComponentById(ResourceTable.Id_SlideAction);
+Optional<PixelMapElement> element = getElementByResId(ResourceTable.Media_cancel_2);
+PixelMap pixelMap = getPixelMapFromDrawable(element.get()).get();
+view.setLeftIcon(pixelMap);
+Optional<PixelMapElement> element1 = getElementByResId(ResourceTable.Media_unlock_2);
+PixelMap pixelMap1 = getPixelMapFromDrawable(element1.get()).get();
+view.setRightIcon(pixelMap1);
 ```
-
-In order to listen for the swipe actions, you must implement the `SlideActionListener` interface.
-
+In order to listen for the swipe actions, you must implement the ``SlideActionListener`` interface.
 ```java
-actionView.setListener(new SlideActionView.SlideActionListener() {
+view.setListener(new SlideActionView.SlideActionListener() {
   @Override
   public void onSlideLeft() {
     // slid left
@@ -65,8 +64,8 @@ actionView.setListener(new SlideActionView.SlideActionListener() {
     // slid right
   }
 });
-```
+ ``` 
 
-### Theming
+#### Theming
+There are several methods that you can call to specify different colors. I will not go into great detail of what they do, but it should be fairly obvious. setTouchHandleColor changes the color of the touch handle. setOutlineColor affects the outlines. setIconColor changes the filter applied to both icons.
 
-There are several methods that you can call to specify different colors. I will not go into great detail of what they do, but it should be fairly obvious. `setTouchHandleColor` changes the color of the touch handle. `setOutlineColor` affects the outlines. `setIconColor` changes the filter applied to both icons.
