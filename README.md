@@ -11,7 +11,7 @@ SlideActionView is a simple widget that provides a nice slide-to-left/right inte
 <img src="https://github.com/priyankabb153/SlideActionView/blob/main/screenshots/slideactionview.gif" width="256">
 
 ## Dependency
-1. For using slideactionview module in sample app, include the source code and add the below dependencies in entry/build.gradle to generate hap/support.har.
+1 . For using slideactionview module in sample app, include the source code and add the below dependencies in entry/build.gradle to generate hap/support.har.
 ```groovy
 	dependencies {
 		implementation project(':slideactionview')
@@ -19,7 +19,7 @@ SlideActionView is a simple widget that provides a nice slide-to-left/right inte
                 testImplementation 'junit:junit:4.13'
 	}
 ```
-2. For using slideactionview in separate application using har file, add the har file in the entry/libs folder and add the dependencies in entry/build.gradle file.
+2 . For using slideactionview in separate application using har file, add the har file in the entry/libs folder and add the dependencies in entry/build.gradle file.
 ```groovy
 	dependencies {
 		implementation fileTree(dir: 'libs', include: ['*.har'])
@@ -68,4 +68,12 @@ view.setListener(new SlideActionView.SlideActionListener() {
 
 #### Theming
 There are several methods that you can call to specify different colors. I will not go into great detail of what they do, but it should be fairly obvious. setTouchHandleColor changes the color of the touch handle. setOutlineColor affects the outlines. setIconColor changes the filter applied to both icons.
+
+#### Future Work
+Since svg format images cannot be converted to pixelmap using drawabletobitmap function of imageutils class, images in png format are being used to set the right and left icons.
+```java
+Optional<PixelMapElement> element1 = getElementByResId(ResourceTable.Media_unlock_2);
+PixelMap pixelMap1 = getPixelMapFromDrawable(element1.get()).get();
+view.setRightIcon(pixelMap1);
+```
 
