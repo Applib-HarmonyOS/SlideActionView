@@ -7,6 +7,7 @@ Inspired by [fennifith/SlideActionView](https://github.com/fennifith/SlideAction
 
 ## Feature
 SlideActionView is a simple widget that provides a nice slide-to-left/right interaction.
+This library internally uses [OHOSUtils](https://github.com/applibgroup/OHOSUtils) for using Utility classes.
 
 <img src="https://github.com/priyankabb153/SlideActionView/blob/main/screenshots/slideactionview.gif" width="256">
 

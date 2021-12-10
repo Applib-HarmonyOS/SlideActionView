@@ -2,15 +2,11 @@
   "string": [
     {
       "name": "entry_MainAbility",
-      "value": "entry_MainAbility"
+      "value": "SlideActionView"
     },
     {
       "name": "mainability_description",
-      "value": "Java_Empty Ability"
-    },
-    {
-      "name": "mainability_HelloWorld",
-      "value": "Hello World"
+      "value": "A HMOS library which provides slide-to-left/right interaction"
     }
   ]
 }
