@@ -1,98 +1,110 @@
 package me.jfenn.slideactionview;
 
-import android.annotation.TargetApi;
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
-import android.util.AttributeSet;
-import android.view.MotionEvent;
-import android.view.View;
-
+import ohos.agp.components.AttrSet;
+import ohos.agp.components.Component;
+import ohos.agp.components.element.Element;
+import ohos.agp.render.BlendMode;
+import ohos.agp.render.Canvas;
+import ohos.agp.render.ColorFilter;
+import ohos.agp.render.Paint;
+import ohos.agp.render.PixelMapHolder;
+import ohos.agp.utils.Color;
+import ohos.app.Context;
+import ohos.media.image.PixelMap;
+import ohos.multimodalinput.event.MmiPoint;
+import ohos.multimodalinput.event.TouchEvent;
+import me.jfenn.ohosutils.DimenUtils;
+import me.jfenn.ohosutils.ImageUtils;
+import me.jfenn.ohosutils.anim.AnimatedFloat;
 import java.util.HashMap;
 import java.util.Map;
 
-import androidx.annotation.ColorInt;
-import androidx.annotation.Nullable;
-import me.jfenn.androidutils.DimenUtils;
-import me.jfenn.androidutils.ImageUtils;
-import me.jfenn.androidutils.anim.AnimatedFloat;
-
-public class SlideActionView extends View implements View.OnTouchListener {
-
-    private float x = -1;
+/**
+ * Slide action view class.
+ */
+public class SlideActionView extends Component implements Component.DrawTask, Component.TouchEventListener {
+    private float mx = -1;
     private AnimatedFloat selected;
     private Map<Float, AnimatedFloat> ripples;
-
     private int handleRadius;
     private int expandedHandleRadius;
     private int selectionRadius;
     private int rippleRadius;
-
     private Paint normalPaint;
     private Paint outlinePaint;
     private Paint bitmapPaint;
-
-    private Bitmap leftImage, rightImage;
-
+    private PixelMap leftImage;
+    private PixelMap rightImage;
     private SlideActionListener listener;
 
+    /**
+     * SlideActionView Constructor.
+     *
+     *  @param context - context for SlideActionView constructor
+     *
+     */
     public SlideActionView(Context context) {
-        super(context);
+        this(context, null);
         init();
+        addDrawTask(this::onDraw);
     }
 
-    public SlideActionView(Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
+    /**
+     * SlideActionView Constructor.
+     *
+     *  @param context - context for SlideActionView constructor
+     *  @param attrSet - attributes
+     *
+     */
+    public SlideActionView(Context context, AttrSet attrSet) {
+        super(context, attrSet, 0);
         init();
+        addDrawTask(this::onDraw);
     }
 
-    public SlideActionView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
+    /**
+     * SlideActionView Constructor.
+     *
+     *  @param context - context for SlideActionView constructor
+     *  @param attrSet - attributes
+     *  @param defStyleAttr - defStyle attribute
+     *
+     */
+    public SlideActionView(Context context, AttrSet attrSet, int defStyleAttr) {
+        super(context, attrSet, defStyleAttr);
         init();
-    }
-
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public SlideActionView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        init();
+        addDrawTask(this::onDraw);
     }
 
     private void init() {
-        handleRadius = DimenUtils.dpToPx(12);
-        expandedHandleRadius = DimenUtils.dpToPx(32);
-        selectionRadius = DimenUtils.dpToPx(42);
-        rippleRadius = DimenUtils.dpToPx(140);
-
+        handleRadius = DimenUtils.dpToPx(getContext(), 12);
+        expandedHandleRadius = DimenUtils.dpToPx(getContext(), 32);
+        selectionRadius = DimenUtils.dpToPx(getContext(), 42);
+        rippleRadius = DimenUtils.dpToPx(getContext(), 140);
         selected = new AnimatedFloat(0);
         ripples = new HashMap<>();
-
         normalPaint = new Paint();
-        normalPaint.setStyle(Paint.Style.FILL);
-        normalPaint.setColor(Color.GRAY);
+        normalPaint.setStyle(Paint.Style.FILL_STYLE);
+        Color hmosColor = SlideActionView.changeParamToColor(Color.GRAY.getValue());
+        normalPaint.setColor(hmosColor);
         normalPaint.setAntiAlias(true);
         normalPaint.setDither(true);
-
         outlinePaint = new Paint();
-        outlinePaint.setStyle(Paint.Style.STROKE);
-        outlinePaint.setColor(Color.GRAY);
+        outlinePaint.setStyle(Paint.Style.STROKE_STYLE);
+        Color hmosColor1 = SlideActionView.changeParamToColor(Color.GRAY.getValue());
+        outlinePaint.setColor(hmosColor1);
         outlinePaint.setAntiAlias(true);
         outlinePaint.setDither(true);
-
         bitmapPaint = new Paint();
-        bitmapPaint.setStyle(Paint.Style.FILL);
-        bitmapPaint.setColor(Color.GRAY);
+        bitmapPaint.setStyle(Paint.Style.FILL_STYLE);
+        Color hmosColor2 = SlideActionView.changeParamToColor(Color.GRAY.getValue());
+        bitmapPaint.setColor(hmosColor2);
         bitmapPaint.setAntiAlias(true);
         bitmapPaint.setDither(true);
         bitmapPaint.setFilterBitmap(true);
-
-        setOnTouchListener(this);
-        setFocusable(true);
+        setTouchEventListener(this);
+        int param = SlideActionView.changeParamBooleanToInt(true);
+        setFocusable(param);
         setClickable(true);
     }
 
@@ -108,46 +120,46 @@ public class SlideActionView extends View implements View.OnTouchListener {
 
     /**
      * Specifies the icon to display on the left side of the view,
-     * as a Drawable. If it is just as easier to pass a Bitmap, you
+     * as a Element. If it is just as easier to pass a PixelMap, you
      * should avoid using this method; all it does is convert the
-     * drawable to a bitmap, then call the same method again.
+     * Element to a pixelmap, then call the same method again.
      *
-     * @param drawable          The Drawable to use as an icon.
+     * @param drawable          The Element to use as an icon.
      */
-    public void setLeftIcon(Drawable drawable) {
+    public void setLeftIcon(Element drawable) {
         setLeftIcon(ImageUtils.drawableToBitmap(drawable));
     }
 
     /**
      * Specifies the icon to display on the left side of the view.
      *
-     * @param bitmap            The Bitmap to use as an icon.
+     * @param bitmap            The PixelMap to use as an icon.
      */
-    public void setLeftIcon(Bitmap bitmap) {
+    public void setLeftIcon(PixelMap bitmap) {
         leftImage = bitmap;
-        postInvalidate();
+        getContext().getUITaskDispatcher().asyncDispatch(this::invalidate);
     }
 
     /**
      * Specifies the icon to display on the right side of the view,
-     * as a Drawable. If it is just as easier to pass a Bitmap, you
+     * as a Element. If it is just as easier to pass a PixelMap, you
      * should avoid using this method; all it does is convert the
-     * drawable to a bitmap, then call the same method again.
+     * element to a pixelmap, then call the same method again.
      *
-     * @param drawable          The Drawable to use as an icon.
+     * @param drawable          The Element to use as an icon.
      */
-    public void setRightIcon(Drawable drawable) {
+    public void setRightIcon(Element drawable) {
         setRightIcon(ImageUtils.drawableToBitmap(drawable));
     }
 
     /**
      * Specifies the icon to display on the right side of the view.
      *
-     * @param bitmap            The Bitmap to use as an icon.
+     * @param bitmap            The PixelMap to use as an icon.
      */
-    public void setRightIcon(Bitmap bitmap) {
+    public void setRightIcon(PixelMap bitmap) {
         rightImage = bitmap;
-        postInvalidate();
+        getContext().getUITaskDispatcher().asyncDispatch(this::invalidate);
     }
 
     /**
@@ -157,16 +169,16 @@ public class SlideActionView extends View implements View.OnTouchListener {
      *
      * @param handleColor       The color of the touch handle.
      */
-    public void setTouchHandleColor(@ColorInt int handleColor) {
-        normalPaint.setColor(handleColor);
+    public void setTouchHandleColor(int handleColor) {
+        Color hmosColor = SlideActionView.changeParamToColor(handleColor);
+        normalPaint.setColor(hmosColor);
     }
 
     /**
-     * @return The color of the touch handle in the center of the view.
+     * The color of the touch handle in the center of the view.
      */
-    @ColorInt
     public int getTouchHandleColor() {
-        return normalPaint.getColor();
+        return normalPaint.getColor().getValue();
     }
 
     /**
@@ -174,16 +186,16 @@ public class SlideActionView extends View implements View.OnTouchListener {
      *
      * @param outlineColor      The color of the random outlines.
      */
-    public void setOutlineColor(@ColorInt int outlineColor) {
-        outlinePaint.setColor(outlineColor);
+    public void setOutlineColor(int outlineColor) {
+        Color hmosColor = SlideActionView.changeParamToColor(outlineColor);
+        outlinePaint.setColor(hmosColor);
     }
 
     /**
-     * @return The color of the random outlines drawn all over the place.
+     * The color of the random outlines drawn all over the place.
      */
-    @ColorInt
     public int getOutlineColor() {
-        return outlinePaint.getColor();
+        return outlinePaint.getColor().getValue();
     }
 
     /**
@@ -191,100 +203,121 @@ public class SlideActionView extends View implements View.OnTouchListener {
      *
      * @param iconColor         The color that the left/right icons are filtered by.
      */
-    public void setIconColor(@ColorInt int iconColor) {
-        bitmapPaint.setColor(iconColor);
-        bitmapPaint.setColorFilter(new PorterDuffColorFilter(iconColor, PorterDuff.Mode.SRC_IN));
+    public void setIconColor(int iconColor) {
+        Color hmosColor = SlideActionView.changeParamToColor(iconColor);
+        bitmapPaint.setColor(hmosColor);
+        bitmapPaint.setColorFilter(new ColorFilter(iconColor, BlendMode.SRC_IN));
     }
 
     /**
-     * @return The color applied to the left/right icons as a filter.
+     * The color applied to the left/right icons as a filter.
      */
-    @ColorInt
     public int getIconColor() {
-        return bitmapPaint.getColor();
+        return bitmapPaint.getColor().getValue();
     }
 
     @Override
-    public void draw(Canvas canvas) {
-        super.draw(canvas);
+    public void onDraw(Component component, Canvas canvas) {
         selected.next(true);
-        if (x < 0)
-            x = (float) getWidth() / 2;
+        if (mx < 0) {
+            mx = (float) getWidth() / 2;
+        }
 
-        normalPaint.setAlpha(150 - (int) (selected.val() * 100));
+        normalPaint.setAlpha((float) (150 - (int) (selected.val() * 100)) / 255);
         int radius = (int) ((handleRadius * (1 - selected.val())) + (expandedHandleRadius * selected.val()));
-        float drawnX = (x * selected.val()) + (((float) getWidth() / 2) * (1 - selected.val()));
+        float drawnX = (mx * selected.val()) + (((float) getWidth() / 2) * (1 - selected.val()));
         canvas.drawCircle(drawnX, (float) getHeight() / 2, radius, normalPaint);
 
         if (leftImage != null && rightImage != null) {
-            bitmapPaint.setAlpha((int) (255 * Math.min(1f, Math.max(0f, (getWidth() - drawnX - selectionRadius) / getWidth()))));
-            canvas.drawBitmap(leftImage, selectionRadius - (leftImage.getWidth() / 2), (getHeight() - leftImage.getHeight()) / 2, bitmapPaint);
-            bitmapPaint.setAlpha((int) (255 * Math.min(1f, Math.max(0f, (drawnX - selectionRadius) / getWidth()))));
-            canvas.drawBitmap(rightImage, getWidth() - selectionRadius - (leftImage.getWidth() / 2), (getHeight() - leftImage.getHeight()) / 2, bitmapPaint);
+            bitmapPaint.setAlpha((255 * Math.min(1f,
+                    Math.max(0f, (getWidth() - drawnX - selectionRadius) / getWidth()))) / 255);
+            PixelMapHolder pixelMapHolder = SlideActionView.changeParamToPixelMapHolder(leftImage);
+            canvas.drawPixelMapHolder(pixelMapHolder, selectionRadius - (leftImage.getImageInfo().size.width / 2),
+                    (getHeight() - leftImage.getImageInfo().size.height) / 2, bitmapPaint);
+            bitmapPaint.setAlpha((255 * Math.min(1f, Math.max(0f, (drawnX - selectionRadius) / getWidth()))) / 255);
+            PixelMapHolder pixelMapHolder1 = SlideActionView.changeParamToPixelMapHolder(rightImage);
+            canvas.drawPixelMapHolder(pixelMapHolder1,
+                    getWidth() - selectionRadius - (leftImage.getImageInfo().size.width / 2),
+                    (getHeight() - leftImage.getImageInfo().size.height) / 2, bitmapPaint);
         }
 
         if (Math.abs((getWidth() / 2) - drawnX) > selectionRadius / 2) {
             if (drawnX * 2 < getWidth()) {
-                float progress = Math.min(1f, Math.max(0f, ((getWidth() - ((drawnX + selectionRadius) * 2)) / getWidth())));
+                float progress = Math.min(1f, Math.max(0f,
+                        ((getWidth() - ((drawnX + selectionRadius) * 2)) / getWidth())));
                 progress = (float) Math.pow(progress, 0.2f);
-
-                outlinePaint.setAlpha((int) (255 * progress));
-                canvas.drawCircle(selectionRadius, getHeight() / 2, (selectionRadius / 2) + (rippleRadius * (1 - progress)), outlinePaint);
+                outlinePaint.setAlpha((255 * progress) / 255);
+                canvas.drawCircle(selectionRadius, getHeight() / 2,
+                        (selectionRadius / 2.0f) + (rippleRadius * (1 - progress)), outlinePaint);
             } else {
-                float progress = Math.min(1f, Math.max(0f, (((drawnX - selectionRadius) * 2) - getWidth()) / getWidth()));
+                float progress = Math.min(1f,
+                        Math.max(0f, (((drawnX - selectionRadius) * 2) - getWidth()) / getWidth()));
                 progress = (float) Math.pow(progress, 0.2f);
-
-                outlinePaint.setAlpha((int) (255 * progress));
-                canvas.drawCircle(getWidth() - selectionRadius, getHeight() / 2, (selectionRadius / 2) + (rippleRadius * (1 - progress)), outlinePaint);
+                outlinePaint.setAlpha((255 * progress) / 255);
+                canvas.drawCircle(getWidth() - selectionRadius,
+                        getHeight() / 2, (selectionRadius / 2.0f) + (rippleRadius * (1 - progress)), outlinePaint);
             }
         }
 
         for (float x : ripples.keySet()) {
             AnimatedFloat scale = ripples.get(x);
             scale.next(true, 1600);
-            normalPaint.setAlpha((int) (150 * (scale.getTarget() - scale.val()) / scale.getTarget()));
+            normalPaint.setAlpha((float) (150 * (scale.getTarget() - scale.val()) / scale.getTarget()) / 255);
             canvas.drawCircle(x, getHeight() / 2, scale.val(), normalPaint);
-            if (scale.isTarget())
+            if (scale.isTarget()) {
                 ripples.remove(x);
+            }
+
         }
 
-        if (!selected.isTarget() || ripples.size() > 0)
-            postInvalidate();
+        if (!selected.isTarget() || ripples.size() > 0) {
+            getContext().getUITaskDispatcher().asyncDispatch(this::invalidate);
+        }
     }
 
     @Override
-    public boolean onTouch(View v, MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_DOWN && Math.abs(event.getX() - (getWidth() / 2)) < selectionRadius)
+    public boolean onTouchEvent(Component component, TouchEvent touchEvent) {
+        MmiPoint point = touchEvent.getPointerScreenPosition(touchEvent.getIndex());
+        if (touchEvent.getAction() == TouchEvent.PRIMARY_POINT_DOWN
+                && Math.abs(point.getX() - (getWidth() / 2)) < selectionRadius) {
             selected.to(1f);
-        else if (event.getAction() == MotionEvent.ACTION_UP && selected.getTarget() > 0) {
+        } else if (touchEvent.getAction() == TouchEvent.PRIMARY_POINT_UP && selected.getTarget() > 0) {
             selected.to(0f);
-            if (event.getX() > getWidth() - (selectionRadius * 2)) {
+            if (point.getX() > getWidth() - (selectionRadius * 2)) {
                 AnimatedFloat ripple = new AnimatedFloat(selectionRadius);
                 ripple.to((float) rippleRadius);
                 ripples.put((float) getWidth() - selectionRadius, ripple);
-                if (listener != null)
+                if (listener != null) {
                     listener.onSlideRight();
-
-                postInvalidate();
-            } else if (event.getX() < selectionRadius * 2) {
+                }
+                getContext().getUITaskDispatcher().asyncDispatch(this::invalidate);
+            } else if (point.getX() < selectionRadius * 2) {
                 AnimatedFloat ripple = new AnimatedFloat(selectionRadius);
                 ripple.to((float) rippleRadius);
                 ripples.put((float) selectionRadius, ripple);
-                if (listener != null)
+                if (listener != null) {
                     listener.onSlideLeft();
-
-                postInvalidate();
+                }
+                getContext().getUITaskDispatcher().asyncDispatch(this::invalidate);
             }
-
-            return true;
         }
 
         if (selected.getTarget() > 0) {
-            x = event.getX();
-            postInvalidate();
+            mx = point.getX();
+            getContext().getUITaskDispatcher().asyncDispatch(this::invalidate);
         }
-
-        return false;
+        return true;
     }
 
+    public static Color changeParamToColor(int color) {
+        return new Color(color);
+    }
+
+    public static int changeParamBooleanToInt(boolean value) {
+        return Boolean.compare(value, false);
+    }
+
+    public static PixelMapHolder changeParamToPixelMapHolder(PixelMap pixelMap) {
+        return new PixelMapHolder(pixelMap);
+    }
 }

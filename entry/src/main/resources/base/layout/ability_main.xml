@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<StackLayout
+    xmlns:ohos="http://schemas.huawei.com/res/ohos"
+    ohos:id="$+id:stacklayout"
+    ohos:height="match_parent"
+    ohos:width="match_parent"
+    ohos:orientation="vertical">
+
+    <me.jfenn.slideactionview.SlideActionView
+        ohos:id="$+id:SlideAction"
+        ohos:background_element="#30000000"
+        ohos:height="150vp"
+        ohos:layout_alignment="bottom"
+        ohos:width="match_parent"/>
+
+</StackLayout>
