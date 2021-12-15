@@ -1,3 +1,5 @@
+[![.github/workflows/main.yml](https://github.com/applibgroup/SlideActionView/actions/workflows/main.yml/badge.svg)](https://github.com/applibgroup/SlideActionView/actions/workflows/main.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=applibgroup_SlideActionView&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=applibgroup_SlideActionView)
 # SlideActionView
 
 A HMOS library which provides slide-to-left/right interaction.
@@ -26,6 +28,13 @@ This library internally uses [OHOSUtils](https://github.com/applibgroup/OHOSUtil
 		implementation fileTree(dir: 'libs', include: ['*.har'])
 		testImplementation 'junit:junit:4.13'
 	}
+```
+3 . For using slideactionview from a remote repository in separate application, add the below dependencies in entry/build.gradle file.
+```groovy
+    dependencies {
+        implementation 'dev.applibgroup:slideactionview:1.0.0' 
+        testCompile 'junit:junit:4.13'
+    }
 ```
 
 ## Usage
